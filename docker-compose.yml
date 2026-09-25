@@ -1,10 +1,16 @@
 services:
-  # Backend de Blueprints con seguridad JWT (Lab 4), construido desde su repositorio
+  # Backend de Blueprints con seguridad JWT (Lab 4). Por defecto se construye desde
+  # el repo clonado junto a este proyecto; se puede cambiar con BACKEND_CONTEXT.
   backend:
     build:
-      context: https://github.com/JoshQ10/LAB04_ARSW_Joshua-David-Quiroga-Landazabal.git#main
+      context: ${BACKEND_CONTEXT:-../LAB04_ARSW_Joshua-David-Quiroga-Landazabal}
     ports:
       - '8080:8080'
+    healthcheck:
+      test: ['CMD-SHELL', 'bash -c "echo > /dev/tcp/localhost/8080" || exit 1']
+      interval: 5s
+      timeout: 3s
+      retries: 20
 
   web:
     build:
@@ -16,4 +22,5 @@ services:
     ports:
       - '5173:80'
     depends_on:
-      - backend
+      backend:
+        condition: service_healthy

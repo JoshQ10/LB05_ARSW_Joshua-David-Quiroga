@@ -197,18 +197,20 @@ Backend usado: [LAB04 – Blueprints API con JWT](https://github.com/JoshQ10/LAB
 
 El backend quedó distinto a los endpoints de ejemplo, así que el cliente se ajustó a él:
 
-| Operación          | Endpoint del Lab 4                       | Notas                                                   |
-| ------------------ | ---------------------------------------- | ------------------------------------------------------- |
-| Login              | `POST /auth/login`                       | Devuelve `{ access_token, token_type, expires_in }`     |
-| Todos los planos   | `GET /api/v1/blueprints`                 | Requiere JWT (scope `blueprints.read`)                  |
-| Planos de un autor | `GET /api/v1/blueprints/{author}`        | 404 si no tiene planos → el cliente muestra lista vacía |
-| Un plano           | `GET /api/v1/blueprints/{author}/{name}` | Requiere JWT                                            |
-| Crear              | `POST /api/v1/blueprints`                | Requiere JWT (scope `blueprints.write`)                 |
+| Operación          | Endpoint del Lab 4                          | Notas                                                   |
+| ------------------ | ------------------------------------------- | ------------------------------------------------------- |
+| Login              | `POST /auth/login`                          | Devuelve `{ access_token, token_type, expires_in }`     |
+| Todos los planos   | `GET /api/v1/blueprints`                    | Requiere JWT (scope `blueprints.read`)                  |
+| Planos de un autor | `GET /api/v1/blueprints/{author}`           | 404 si no tiene planos → el cliente muestra lista vacía |
+| Un plano           | `GET /api/v1/blueprints/{author}/{name}`    | Requiere JWT                                            |
+| Crear              | `POST /api/v1/blueprints`                   | Requiere JWT (scope `blueprints.write`)                 |
+| Actualizar         | `PUT /api/v1/blueprints/{author}/{name}`    | Reemplaza los puntos (`blueprints.write`)               |
+| Eliminar           | `DELETE /api/v1/blueprints/{author}/{name}` | Requiere JWT (`blueprints.write`)                       |
 
 - Todas las respuestas vienen envueltas en `{ code, message, data }`; `apiclient` las desempaqueta.
 - Usuarios de prueba: `student / student123` y `assistant / assistant123`.
 - El Lab 4 **no configura CORS**. Por eso en desarrollo las rutas `/api` y `/auth` pasan por el **proxy de Vite** (`vite.config.js`) y en Docker por **nginx**. Así el navegador ve el front y la API en el mismo origen y no hace falta cambiar el backend.
-- El Lab 4 **no expone** `PUT /{author}/{name}` ni `DELETE`. El cliente sí los implementa (slice, servicios y UI). Contra el backend real el servidor responde `405` y la actualización optimista se revierte, mostrando el error. Con el mock funcionan completos.
+- `PUT /{author}/{name}` y `DELETE /{author}/{name}` **se agregaron al Lab 4** para este laboratorio, con sus pruebas (`BlueprintsAPIControllerTest`). El cliente los usa con actualizaciones optimistas: si el servidor falla (por ejemplo, un backend sin esos endpoints responde `405`), el cambio se revierte y se muestra el error.
 
 ### Cómo ejecutar
 
@@ -237,7 +239,10 @@ npm run dev          # http://localhost:5173
 docker compose up --build   # front en http://localhost:5173, API en :8080
 ```
 
-`docker-compose.yml` construye el backend directamente desde el repositorio del Lab 4. nginx sirve la SPA y reenvía `/api` y `/auth` al contenedor `backend`.
+- El backend se construye desde el repo del Lab 4 clonado junto a este proyecto (`../LAB04_ARSW_Joshua-David-Quiroga-Landazabal`). Para usar otra ruta, define `BACKEND_CONTEXT`: `BACKEND_CONTEXT=/ruta/al/lab4 docker compose up --build`.
+- El front se construye con `VITE_USE_MOCK=false`. nginx sirve la SPA (también al recargar rutas como `/login`) y reenvía `/api` y `/auth` al contenedor `backend`.
+- `web` espera a que el healthcheck del `backend` esté en verde antes de arrancar.
+- Para detener: `docker compose down`. El backend guarda los datos en memoria, así que al reiniciarlo vuelve a los datos semilla.
 
 ### Arquitectura
 
@@ -287,5 +292,5 @@ src/
   - Login inválido y válido.
   - Listado, autor inexistente → lista vacía, plano individual.
   - Creación y duplicado → error del backend.
-  - PUT/DELETE → 405 → reversión.
+  - PUT reemplaza los puntos y DELETE elimina el plano; si el servidor falla, el cambio optimista se revierte.
   - Token inválido → el interceptor cierra la sesión.
