@@ -295,24 +295,142 @@ src/
   - PUT reemplaza los puntos y DELETE elimina el plano; si el servidor falla, el cambio optimista se revierte.
   - Token inválido → el interceptor cierra la sesión.
 
+---
 
- Evidencias:
- imagen contenedor healthy y up: <img width="1612" height="130" alt="image" src="https://github.com/user-attachments/assets/ae70348c-dbd9-4e15-a94e-e92bb427b9d6" />
- imagen acceso no autorizado: <img width="2229" height="908" alt="image" src="https://github.com/user-attachments/assets/857ba411-10b7-4c4d-a2a0-a0c64a947f7e" />
- imagen ruta protegido por login al dar click a "Nuevo": <img width="2316" height="569" alt="image" src="https://github.com/user-attachments/assets/bb7bbdb5-08a3-4fb8-afe8-4855d11b72b8" />
- imagen access token al iniciar sesion: <img width="798" height="245" alt="image" src="https://github.com/user-attachments/assets/0a78e824-9459-4443-91fd-6868a0495017" />
- imagen request headers: <img width="555" height="614" alt="image" src="https://github.com/user-attachments/assets/d169a9c8-7989-4e46-85ac-9cc469298943" />
- imagen tabla john blueprints: <img width="530" height="495" alt="image" src="https://github.com/user-attachments/assets/24dcc6ae-2783-497c-ad37-7ad9d3bce942" />
- imagen blueprint house: <img width="647" height="560" alt="image" src="https://github.com/user-attachments/assets/f98ebf6e-5f4f-4de7-bbea-d797f01cba27" />
- imagen top 5 por numero de puntos: <img width="520" height="220" alt="image" src="https://github.com/user-attachments/assets/898368d2-11ca-4e6c-ab33-4d70fda55762" />
- blueprint nuevo: <img width="701" height="666" alt="image" src="https://github.com/user-attachments/assets/a96acbdc-0b9d-4574-9a35-ac5305ce915b" />
- imagen nuevo plan student: <img width="1200" height="732" alt="image" src="https://github.com/user-attachments/assets/5c778a29-445b-49e8-b426-cac84f792f71" />
- confirmacion blueprint eliminado: <img width="2256" height="1043" alt="image" src="https://github.com/user-attachments/assets/12287d0b-83e3-4775-a014-0f575547a3a7" />
- confirmacion edicion blueprint perro PUT: <img width="1870" height="1014" alt="image" src="https://github.com/user-attachments/assets/a47e6677-258d-46aa-a343-a3c1be2d44fa" />
- pagina Mock =true : <img width="1696" height="698" alt="image" src="https://github.com/user-attachments/assets/5dccab74-f0f0-47f9-9c27-5e1785479cb6" />
- pagina Mock =false : <img width="1703" height="861" alt="image" src="https://github.com/user-attachments/assets/3cb86b4b-9756-422b-be33-206c361a5866" />
- imagen modo claro: <img width="1472" height="987" alt="image" src="https://github.com/user-attachments/assets/e3458350-3678-4b89-81ae-89778da18301" />
- imagen responisve (iphone 12): <img width="691" height="943" alt="image" src="https://github.com/user-attachments/assets/5d0c517e-04fc-46a2-997e-d92677b24982" />
- npm test: <img width="913" height="150" alt="image" src="https://github.com/user-attachments/assets/b095529a-7d5c-443a-9453-55b9670938de" />
- npm.cmd run lint: <img width="774" height="138" alt="image" src="https://github.com/user-attachments/assets/76e74ef8-9e2c-4653-bd0f-98e6ba02d070" />
- npm run build: <img width="791" height="225" alt="image" src="https://github.com/user-attachments/assets/abbce1a4-1c82-4df8-9f73-b9dab6a8d103" />
+## 📸 Evidencias
+
+Capturas tomadas con el front y el backend del Lab 4 corriendo en Docker (`apiclient`), salvo la sección 7, que compara ambos modos.
+
+| #   | Evidencia                                                       | Requerimiento                       |
+| --- | --------------------------------------------------------------- | ----------------------------------- |
+| 1   | [Despliegue con Docker](#1-despliegue-con-docker)               | Docker (opcional)                   |
+| 2   | [Seguridad con JWT](#2-seguridad-con-jwt)                       | JWT, interceptores y `PrivateRoute` |
+| 3   | [Listar y graficar planos](#3-listar-y-graficar-planos)         | Req. 1, 2, 3 y 5                    |
+| 4   | [Top 5 por número de puntos](#4-top-5-por-número-de-puntos)     | Selectores memoizados               |
+| 5   | [Crear un plano dibujando](#5-crear-un-plano-dibujando)         | Dibujo interactivo y botón Guardar  |
+| 6   | [Editar y eliminar](#6-editar-y-eliminar)                       | CRUD completo (`PUT` / `DELETE`)    |
+| 7   | [Cambio entre mock y API real](#7-cambio-entre-mock-y-api-real) | Req. 4                              |
+| 8   | [Estilos y diseño responsive](#8-estilos-y-diseño-responsive)   | Req. 6, dark mode y responsive      |
+| 9   | [Pruebas, lint y build](#9-pruebas-lint-y-build)                | Req. 7 y CI                         |
+
+### 1. Despliegue con Docker
+
+`docker compose ps`: el front (nginx) y el backend del Lab 4 arriba, con el backend en estado `healthy`.
+
+<p align="center">
+  <img alt="docker compose ps" src="https://github.com/user-attachments/assets/ae70348c-dbd9-4e15-a94e-e92bb427b9d6" />
+</p>
+
+### 2. Seguridad con JWT
+
+Sin sesión, el backend responde `401` y la UI muestra el error con el botón **Reintentar**:
+
+<p align="center">
+  <img width="85%" alt="Acceso no autorizado" src="https://github.com/user-attachments/assets/857ba411-10b7-4c4d-a2a0-a0c64a947f7e" />
+</p>
+
+`PrivateRoute`: al entrar a **Nuevo** sin sesión, redirige al login:
+
+<p align="center">
+  <img width="85%" alt="Ruta protegida" src="https://github.com/user-attachments/assets/bb7bbdb5-08a3-4fb8-afe8-4855d11b72b8" />
+</p>
+
+<table>
+  <tr>
+    <th width="50%">Login: el backend entrega el <code>access_token</code></th>
+    <th width="50%">Interceptor: agrega <code>Authorization: Bearer …</code></th>
+  </tr>
+  <tr>
+    <td><img alt="Access token" src="https://github.com/user-attachments/assets/0a78e824-9459-4443-91fd-6868a0495017" /></td>
+    <td><img alt="Request headers" src="https://github.com/user-attachments/assets/d169a9c8-7989-4e46-85ac-9cc469298943" /></td>
+  </tr>
+</table>
+
+### 3. Listar y graficar planos
+
+<table>
+  <tr>
+    <th width="50%">Req. 2: tabla de planos de <code>john</code> (nombre, puntos, Open y total)</th>
+    <th width="50%">Req. 1, 3 y 5: <code>Open</code> actualiza <i>Current blueprint</i> (Redux) y dibuja el plano en el canvas</th>
+  </tr>
+  <tr>
+    <td><img alt="Tabla de blueprints de john" src="https://github.com/user-attachments/assets/24dcc6ae-2783-497c-ad37-7ad9d3bce942" /></td>
+    <td><img alt="Blueprint house en el canvas" src="https://github.com/user-attachments/assets/f98ebf6e-5f4f-4de7-bbea-d797f01cba27" /></td>
+  </tr>
+</table>
+
+### 4. Top 5 por número de puntos
+
+Se calcula con un selector memoizado (`createSelector`) sobre el catálogo completo.
+
+<p align="center">
+  <img alt="Top 5" src="https://github.com/user-attachments/assets/898368d2-11ca-4e6c-ab33-4d70fda55762" />
+</p>
+
+### 5. Crear un plano dibujando
+
+<table>
+  <tr>
+    <th width="50%">Los puntos se agregan con clics sobre el lienzo</th>
+    <th width="50%">Tras <b>Guardar</b>, el plano aparece en la tabla de <code>student</code></th>
+  </tr>
+  <tr>
+    <td><img alt="Blueprint nuevo" src="https://github.com/user-attachments/assets/a96acbdc-0b9d-4574-9a35-ac5305ce915b" /></td>
+    <td><img alt="Nuevo plano de student" src="https://github.com/user-attachments/assets/5c778a29-445b-49e8-b426-cac84f792f71" /></td>
+  </tr>
+</table>
+
+### 6. Editar y eliminar
+
+Operaciones con actualización optimista contra los endpoints agregados al Lab 4.
+
+<table>
+  <tr>
+    <th width="50%">Edición (<code>PUT</code>): nuevos puntos del plano</th>
+    <th width="50%">Eliminación (<code>DELETE</code>): el plano desaparece de la tabla</th>
+  </tr>
+  <tr>
+    <td><img alt="Blueprint editado" src="https://github.com/user-attachments/assets/a47e6677-258d-46aa-a343-a3c1be2d44fa" /></td>
+    <td><img alt="Blueprint eliminado" src="https://github.com/user-attachments/assets/12287d0b-83e3-4775-a014-0f575547a3a7" /></td>
+  </tr>
+</table>
+
+### 7. Cambio entre mock y API real
+
+Cambiando una sola línea del `.env`, `blueprintsService.js` usa uno u otro servicio. El distintivo del encabezado indica cuál está activo.
+
+<table>
+  <tr>
+    <th width="50%"><code>VITE_USE_MOCK=true</code> → <code>apimock</code></th>
+    <th width="50%"><code>VITE_USE_MOCK=false</code> → <code>apiclient</code></th>
+  </tr>
+  <tr>
+    <td><img alt="Modo mock" src="https://github.com/user-attachments/assets/5dccab74-f0f0-47f9-9c27-5e1785479cb6" /></td>
+    <td><img alt="Modo API real" src="https://github.com/user-attachments/assets/3cb86b4b-9756-422b-be33-206c361a5866" /></td>
+  </tr>
+</table>
+
+### 8. Estilos y diseño responsive
+
+El modo oscuro es el de las capturas anteriores. El botón ☀/☾ alterna el tema y la elección se recuerda.
+
+<table>
+  <tr>
+    <th width="65%">Modo claro</th>
+    <th width="35%">Vista móvil (iPhone 12)</th>
+  </tr>
+  <tr>
+    <td><img alt="Modo claro" src="https://github.com/user-attachments/assets/e3458350-3678-4b89-81ae-89778da18301" /></td>
+    <td><img alt="Vista responsive" src="https://github.com/user-attachments/assets/5d0c517e-04fc-46a2-997e-d92677b24982" /></td>
+  </tr>
+</table>
+
+### 9. Pruebas, lint y build
+
+Los mismos comandos que ejecuta el workflow de GitHub Actions.
+
+| Comando         | Resultado                                                                                                         |
+| --------------- | ----------------------------------------------------------------------------------------------------------------- |
+| `npm test`      | <img alt="npm test" src="https://github.com/user-attachments/assets/b095529a-7d5c-443a-9453-55b9670938de" />      |
+| `npm run lint`  | <img alt="npm run lint" src="https://github.com/user-attachments/assets/76e74ef8-9e2c-4653-bd0f-98e6ba02d070" />  |
+| `npm run build` | <img alt="npm run build" src="https://github.com/user-attachments/assets/abbce1a4-1c82-4df8-9f73-b9dab6a8d103" /> |
