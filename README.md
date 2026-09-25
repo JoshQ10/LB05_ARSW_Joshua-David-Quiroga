@@ -311,7 +311,8 @@ Capturas tomadas con el front y el backend del Lab 4 corriendo en Docker (`apicl
 | 6   | [Editar y eliminar](#6-editar-y-eliminar)                       | CRUD completo (`PUT` / `DELETE`)    |
 | 7   | [Cambio entre mock y API real](#7-cambio-entre-mock-y-api-real) | Req. 4                              |
 | 8   | [Estilos y diseño responsive](#8-estilos-y-diseño-responsive)   | Req. 6, dark mode y responsive      |
-| 9   | [Pruebas, lint y build](#9-pruebas-lint-y-build)                | Req. 7 y CI                         |
+| 9   | [Pruebas, lint y build](#9-pruebas-lint-y-build)                | Req. 7                              |
+| 10  | [Integración continua](#10-integración-continua)                | CI con GitHub Actions               |
 
 ### 1. Despliegue con Docker
 
@@ -435,5 +436,10 @@ Los mismos comandos que ejecuta el workflow de GitHub Actions.
 | `npm run lint`  | <img alt="npm run lint" src="https://github.com/user-attachments/assets/76e74ef8-9e2c-4653-bd0f-98e6ba02d070" />  |
 | `npm run build` | <img alt="npm run build" src="https://github.com/user-attachments/assets/abbce1a4-1c82-4df8-9f73-b9dab6a8d103" /> |
 
-imagen ci funcional: <img width="2468" height="524" alt="image" src="https://github.com/user-attachments/assets/86389579-db13-47d3-a3e6-665b7307e564" />
+### 10. Integración continua
 
+El workflow `node-ci` de GitHub Actions corre en cada push y pull request: `npm ci`, lint, formato, pruebas y build, todos en verde.
+
+<p align="center">
+  <img alt="Workflow node-ci en verde" src="https://github.com/user-attachments/assets/86389579-db13-47d3-a3e6-665b7307e564" />
+</p>
