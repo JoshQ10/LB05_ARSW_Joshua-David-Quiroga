@@ -434,3 +434,6 @@ Los mismos comandos que ejecuta el workflow de GitHub Actions.
 | `npm test`      | <img alt="npm test" src="https://github.com/user-attachments/assets/b095529a-7d5c-443a-9453-55b9670938de" />      |
 | `npm run lint`  | <img alt="npm run lint" src="https://github.com/user-attachments/assets/76e74ef8-9e2c-4653-bd0f-98e6ba02d070" />  |
 | `npm run build` | <img alt="npm run build" src="https://github.com/user-attachments/assets/abbce1a4-1c82-4df8-9f73-b9dab6a8d103" /> |
+
+imagen ci funcional: <img width="2468" height="524" alt="image" src="https://github.com/user-attachments/assets/86389579-db13-47d3-a3e6-665b7307e564" />
+
