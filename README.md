@@ -137,25 +137,25 @@ VITE_USE_MOCK=true
 ## 📌 Recomendaciones y actividades sugeridas para el exito del laboratorio
 
 1. **Redux avanzado**
-   - [ ] Agrega estados `loading/error` por _thunk_ y muéstralos en la UI.
-   - [ ] Implementa _memo selectors_ para derivar el top-5 de blueprints por cantidad de puntos.
+   - [x] Agrega estados `loading/error` por _thunk_ y muéstralos en la UI.
+   - [x] Implementa _memo selectors_ para derivar el top-5 de blueprints por cantidad de puntos.
 2. **Rutas protegidas**
-   - [ ] Crea un componente `<PrivateRoute>` y protege la creación/edición.
+   - [x] Crea un componente `<PrivateRoute>` y protege la creación/edición.
 3. **CRUD completo**
-   - [ ] Implementa `PUT /api/blueprints/{author}/{name}` y `DELETE ...` en el slice y en la UI.
-   - [ ] Optimistic updates (revertir si falla).
+   - [x] Implementa `PUT /api/blueprints/{author}/{name}` y `DELETE ...` en el slice y en la UI.
+   - [x] Optimistic updates (revertir si falla).
 4. **Dibujo interactivo**
-   - [ ] Reemplaza el `svg` por un lienzo donde el usuario haga _click_ para agregar puntos.
-   - [ ] Botón “Guardar” que envíe el blueprint.
+   - [x] Reemplaza el `svg` por un lienzo donde el usuario haga _click_ para agregar puntos.
+   - [x] Botón “Guardar” que envíe el blueprint.
 5. **Errores y _Retry_**
-   - [ ] Si `GET` falla, muestra un banner y un botón **Reintentar** que dispare el thunk.
+   - [x] Si `GET` falla, muestra un banner y un botón **Reintentar** que dispare el thunk.
 6. **Testing**
-   - [ ] Pruebas de `blueprintsSlice` (reducers puros).
-   - [ ] Pruebas de componentes con Testing Library (render, interacción).
+   - [x] Pruebas de `blueprintsSlice` (reducers puros).
+   - [x] Pruebas de componentes con Testing Library (render, interacción).
 7. **CI/Lint/Format**
-   - [ ] Activa **GitHub Actions** (workflow incluido) → lint + test + build.
+   - [x] Activa **GitHub Actions** (workflow incluido) → lint + test + build.
 8. **Docker (opcional)**
-   - [ ] Crea `Dockerfile` (+ `compose`) para front + backend.
+   - [x] Crea `Dockerfile` (+ `compose`) para front + backend.
 
 ## Criterios de evaluación
 
@@ -184,3 +184,108 @@ VITE_USE_MOCK=true
 - **Dark mode** y diseño responsive.
 
 > Este proyecto es un punto de partida para que tus estudiantes evolucionen el cliente clásico de Blueprints a una SPA moderna con prácticas de la industria.
+
+---
+
+## ✅ Desarrollo del laboratorio
+
+**Autor:** Joshua David Quiroga Landazabal
+
+Backend usado: [LAB04 – Blueprints API con JWT](https://github.com/JoshQ10/LAB04_ARSW_Joshua-David-Quiroga-Landazabal), que extiende el [LAB03](https://github.com/JoshQ10/LAB03_ARSW_Joshua_David_Quiroga).
+
+### Endpoints reales del backend (Lab 4)
+
+El backend quedó distinto a los endpoints de ejemplo, así que el cliente se ajustó a él:
+
+| Operación          | Endpoint del Lab 4                       | Notas                                                   |
+| ------------------ | ---------------------------------------- | ------------------------------------------------------- |
+| Login              | `POST /auth/login`                       | Devuelve `{ access_token, token_type, expires_in }`     |
+| Todos los planos   | `GET /api/v1/blueprints`                 | Requiere JWT (scope `blueprints.read`)                  |
+| Planos de un autor | `GET /api/v1/blueprints/{author}`        | 404 si no tiene planos → el cliente muestra lista vacía |
+| Un plano           | `GET /api/v1/blueprints/{author}/{name}` | Requiere JWT                                            |
+| Crear              | `POST /api/v1/blueprints`                | Requiere JWT (scope `blueprints.write`)                 |
+
+- Todas las respuestas vienen envueltas en `{ code, message, data }`; `apiclient` las desempaqueta.
+- Usuarios de prueba: `student / student123` y `assistant / assistant123`.
+- El Lab 4 **no configura CORS**. Por eso en desarrollo las rutas `/api` y `/auth` pasan por el **proxy de Vite** (`vite.config.js`) y en Docker por **nginx**. Así el navegador ve el front y la API en el mismo origen y no hace falta cambiar el backend.
+- El Lab 4 **no expone** `PUT /{author}/{name}` ni `DELETE`. El cliente sí los implementa (slice, servicios y UI). Contra el backend real el servidor responde `405` y la actualización optimista se revierte, mostrando el error. Con el mock funcionan completos.
+
+### Cómo ejecutar
+
+Requiere Node.js 20.19+ (lo pide Vite 7).
+
+```bash
+npm install
+cp .env.example .env
+npm run dev          # http://localhost:5173
+```
+
+**Modo mock** (sin backend): `VITE_USE_MOCK=true` en `.env`. El login acepta los mismos usuarios del Lab 4.
+
+**Modo API real**: levantar el Lab 4 (`mvn -DskipTests spring-boot:run` con JDK 21) y poner `VITE_USE_MOCK=false` en `.env`.
+
+| Variable            | Valor por defecto       | Uso                                                         |
+| ------------------- | ----------------------- | ----------------------------------------------------------- |
+| `VITE_USE_MOCK`     | `true`                  | `true` → `apimock`, `false` → `apiclient`                   |
+| `VITE_API_BASE_URL` | `/api/v1`               | Base de la API de blueprints (relativa = pasa por el proxy) |
+| `VITE_AUTH_URL`     | `/auth/login`           | Endpoint que emite el JWT                                   |
+| `VITE_BACKEND_URL`  | `http://localhost:8080` | Destino del proxy de Vite                                   |
+
+**Docker (front + backend):**
+
+```bash
+docker compose up --build   # front en http://localhost:5173, API en :8080
+```
+
+`docker-compose.yml` construye el backend directamente desde el repositorio del Lab 4. nginx sirve la SPA y reenvía `/api` y `/auth` al contenedor `backend`.
+
+### Arquitectura
+
+```carpetas
+src/
+├─ components/
+│  ├─ BlueprintCanvas.jsx     # <canvas id="blueprint-canvas"> 520×360: segmentos + marca de cada punto; modo clic para dibujar
+│  ├─ BlueprintForm.jsx       # crear/editar: autor, nombre y puntos dibujados en el lienzo (Guardar/Deshacer/Limpiar)
+│  ├─ BlueprintList.jsx       # tabla: Blueprint name | Number of points | Open
+│  ├─ TopBlueprints.jsx       # top 5 por número de puntos (selector memoizado)
+│  ├─ ErrorBanner.jsx         # banner de error con botón Reintentar
+│  ├─ PrivateRoute.jsx        # protege crear/editar; redirige a /login y vuelve a la ruta original
+│  ├─ DeleteButton.jsx, ThemeToggle.jsx
+├─ features/
+│  ├─ blueprints/blueprintsSlice.js   # thunks, estados loading/error por thunk, updates optimistas, selectores
+│  └─ auth/authSlice.js               # login JWT, logout, sesión inicial desde localStorage (descarta tokens vencidos)
+├─ pages/  BlueprintsPage, BlueprintDetailPage, CreateBlueprintPage, EditBlueprintPage, LoginPage, NotFound
+├─ services/
+│  ├─ apiClient.js            # axios + interceptores: agrega Bearer y, ante un 401, cierra la sesión
+│  ├─ blueprints/apiclient.js # API REST real
+│  ├─ blueprints/apimock.js   # datos en memoria (misma interfaz)
+│  ├─ blueprintsService.js    # elige mock o API según VITE_USE_MOCK
+│  ├─ authService.js, tokenStorage.js
+└─ store/index.js             # makeStore(): inyecta los servicios como extraArgument de los thunks
+```
+
+### Requerimientos
+
+1. **Canvas**: `BlueprintCanvas` dibuja un `<canvas id="blueprint-canvas">` de 520×360 con cuadrícula estilo plano. Si los puntos son muy pequeños (el seed del Lab 4 va de 0 a 15) o se salen del lienzo, se escalan para que se vean.
+2. **Planos por autor**: se escribe el autor (con sugerencias de los autores conocidos), `Get blueprints` despacha `fetchByAuthor` y la tabla muestra nombre, número de puntos y `Open`, más el total de puntos del autor.
+3. **Abrir un plano**: `Open` despacha `fetchBlueprint`. El campo de texto _Current blueprint_ se actualiza desde Redux y el canvas dibuja los segmentos consecutivos y marca cada punto (el primero en verde).
+4. **`apimock` y `apiclient`**: ambos exponen `getAll`, `getByAuthor`, `getByAuthorAndName` y `create` (más `update` y `remove`). `blueprintsService.js` elige uno u otro con una sola línea según `VITE_USE_MOCK`.
+5. **Interfaz React**: el nombre del plano actual sale del estado global (`selectCurrentName`). No se manipula el DOM directamente; el canvas usa `ref` dentro de `useEffect`.
+6. **Estilos**: CSS propio con variables, modo claro/oscuro (se recuerda la elección) y diseño responsive. La tabla, los botones y las tarjetas siguen el mock de referencia.
+7. **Pruebas**: 73 pruebas con Vitest + Testing Library en `tests/`:
+   - Render del canvas, dibujo de segmentos y puntos, clic para agregar puntos.
+   - Envío y validación del formulario.
+   - `dispatch` de `fetchByAuthor` desde la página, tabla y `Open`.
+   - Reducers puros, updates optimistas con reversión y selectores memoizados.
+   - Interceptores JWT, `PrivateRoute`, login y conmutación mock/API.
+
+### Verificación
+
+- `npm run lint`, `npm run format:check`, `npm test` y `npm run build` pasan; el workflow de CI ejecuta los cuatro.
+- El store y los servicios se probaron contra el backend real del Lab 4:
+  - Sin token → 401 → banner.
+  - Login inválido y válido.
+  - Listado, autor inexistente → lista vacía, plano individual.
+  - Creación y duplicado → error del backend.
+  - PUT/DELETE → 405 → reversión.
+  - Token inválido → el interceptor cierra la sesión.

@@ -1,14 +1,19 @@
-version: '3.9'
 services:
-  web:
-    build: .
-    ports:
-      - '5173:4173'
-    environment:
-      - VITE_API_BASE_URL=http://backend:8080/api
-    depends_on:
-      - backend
+  # Backend de Blueprints con seguridad JWT (Lab 4), construido desde su repositorio
   backend:
-    image: ghcr.io/your-org/blueprints-backend:latest
+    build:
+      context: https://github.com/JoshQ10/LAB04_ARSW_Joshua-David-Quiroga-Landazabal.git#main
     ports:
       - '8080:8080'
+
+  web:
+    build:
+      context: .
+      args:
+        VITE_USE_MOCK: 'false'
+    environment:
+      BACKEND_URL: http://backend:8080
+    ports:
+      - '5173:80'
+    depends_on:
+      - backend

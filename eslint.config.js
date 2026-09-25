@@ -1,10 +1,14 @@
 // eslint.config.js (Flat Config para ESLint v9)
+import js from '@eslint/js'
 import globals from 'globals'
 import pluginReact from 'eslint-plugin-react'
+import pluginReactHooks from 'eslint-plugin-react-hooks'
 
 export default [
-  // Ignorar carpetas de build y dependencias
-  { ignores: ['dist/**', 'build/**', 'node_modules/**'] },
+  // Ignorar carpetas de build, cobertura y dependencias
+  { ignores: ['dist/**', 'build/**', 'coverage/**', 'node_modules/**'] },
+
+  js.configs.recommended,
 
   // Reglas para el código de la app
   {
@@ -15,10 +19,13 @@ export default [
       globals: { ...globals.browser, ...globals.node },
       parserOptions: { ecmaFeatures: { jsx: true } },
     },
-    plugins: { react: pluginReact },
+    plugins: { react: pluginReact, 'react-hooks': pluginReactHooks },
     rules: {
+      ...pluginReact.configs.recommended.rules,
+      ...pluginReact.configs['jsx-runtime'].rules,
+      ...pluginReactHooks.configs.recommended.rules,
       'react/prop-types': 'off',
-      'react/react-in-jsx-scope': 'off', // React 17+ (Vite) no requiere import React
+      'no-unused-vars': ['error', { argsIgnorePattern: '^_', caughtErrors: 'none' }],
     },
     settings: { react: { version: 'detect' } },
   },
@@ -27,8 +34,6 @@ export default [
   {
     files: ['tests/**/*.{js,jsx}'],
     languageOptions: {
-      ecmaVersion: 2022,
-      sourceType: 'module',
       globals: { ...globals.node, ...globals.browser, ...globals.vitest },
     },
   },
